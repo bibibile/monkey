@@ -1,1 +1,53 @@
-a
+name: Monkey Auto
+
+on:
+  # 每天utc时间18:00自动运行
+  schedule:
+    - cron: '0 18 * * *'
+
+  # 代码提交时自动运行
+  push:
+    branches:
+      - main
+      - master
+
+  # PR时运行
+  pull_request:
+    branches:
+      - main
+      - master
+
+  # 手动运行
+  workflow_dispatch:
+
+jobs:
+  monkey:
+
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
+      MONKEY_API_KEY: ${{ secrets.MONKEY_API_KEY }}
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          pip install -r requirements.txt
+
+      - name: Run
+        run: |
+          python monkey.py
